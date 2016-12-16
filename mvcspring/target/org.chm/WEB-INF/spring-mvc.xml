@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <mvc:annotation-driven  conversion-service="conversionService"/>
+    <mvc:default-servlet-handler />
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" >
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />
+    </bean>
+    <!-- 使用视图的名字来解析视图 -->
+    <bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+        <!--通过order属性来定义shut解析器的优先级，order值越小优先级越高-->
+        <property name="order" value="100" />
+    </bean>
+
+    <!-- 扫描web相关的bean -->
+    <context:component-scan base-package="org.chm" />
+    <!-- 配置国际化资源文件 -->
+    <bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource" >
+        <property name="basename" value="i18n"></property>
+    </bean>
+
+    <mvc:view-controller path="/success" view-name="success"/>
+
+    <!-- 既可以添加自定义的转换器，也可以使用SpringMVC提供的数据格式化功能-->
+    <bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean" >
+        <property name="converters">
+            <set>
+                <ref bean="userConverter"/>
+            </set>
+        </property>
+    </bean>
+
+    <!-- 配置SessionLocaleResolver-->
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+
+    <!-- 配置拦截器 -->
+    <mvc:interceptors>
+        <bean class="org.chm.Interceptor.FirstInterceptor"></bean>
+        <!-- 配置拦截器作用或不用的路径 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/internat/testLocal"/>
+            <bean class="org.chm.Interceptor.SecondInterceptor" />
+        </mvc:interceptor>
+        <!-- 配置LocaleChangeInterceptor -->
+        <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"></bean>
+    </mvc:interceptors>
+
+
+    <!-- 配置MultipartResolver,用于文件上传-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver" >
+        <property name="defaultEncoding" value="utf-8"></property>
+        <property name="maxUploadSize" value="1024000"></property>
+    </bean>
+</beans>
